@@ -119,7 +119,6 @@ class NbitRecallTask(BaseTask):
         self.distractor_state_time = self.start_time + self.pattern_length
         self.total_duration = self.start_time + self.pattern_length + \
                               self.distraction_duration + 1 + self.pattern_length
-
         if self.loop_unique_input:
             self.looping_index = 0  # used for drawing from shuffled patterns
             self.pre_generate_all_patterns()
@@ -238,11 +237,16 @@ class NbitRecallTask(BaseTask):
         """
         :param prediction: full time-series response of model
         :param target: target pattern
-        :return: tuple (NRMSE, 1 if correctly identified or 0 if not)
+        :return: 1 if correctly identified or 0 if not
         """
 
         prediction_pattern = prediction[self.recall_time:, :-2]
-
+        rounded_prediction = np.rint(prediction_pattern).astype(np.int64)
+        rounded_target = np.rint(target).astype(np.int64)
+        if np.sum(rounded_target - rounded_prediction) == 0:
+            return 1
+        else:
+            return 0
 
 
 class MemoryCapacityTask(BaseTask):

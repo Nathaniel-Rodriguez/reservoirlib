@@ -30,7 +30,7 @@ class BenchmarkExperiment:
             input_trials[i], target_trials[i] = self.task.generate_signal()
 
         # Train ESN
-        self.esn.train(input_trials, target_trials)
+        self.esn.train(input_trials, target_trials) ######need train settings that task needs
 
     def evaluate_model(self):
         """
