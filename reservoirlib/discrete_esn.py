@@ -2,6 +2,8 @@ import numpy as np
 from scipy import linalg
 from abc import ABC
 from reservoirlib.utilities import DEFAULT_FLOAT
+from reservoirlib.utilities import normalize_root_mean_squared_error
+from reservoirlib.utilities import absolute_error
 
 
 class BaseActivator(ABC):
@@ -16,6 +18,7 @@ class BaseActivator(ABC):
         All operations should be in-place
         """
         pass
+
 
 class Linear(BaseActivator):
     """
