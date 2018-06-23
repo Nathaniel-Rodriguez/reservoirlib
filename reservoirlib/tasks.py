@@ -315,6 +315,26 @@ class MemoryCapacityTask(BaseTask):
 
         return input_signal, target_signal
 
+    def validate(self, prediction, target):
+        """
+        :param prediction: full time-series response of model
+        :param target: target array
+        :return: Memory capacity
+        """
+
+        # Evaluate correlation coefficient for all lags
+        delay = np.array([i * self.shift
+                          for i in reversed(range(1, self.num_lags + 1))])
+        detcoef = np.zeros(self.num_lags)
+        for i in range(self.num_lags):
+            cor_coef = np.corrcoef(prediction[:, i], target[:, i])[0, 1]
+            if np.isnan(cor_coef):
+                detcoef[i] = 0.0
+            else:
+                detcoef[i] = cor_coef**2
+
+        return np.sum(detcoef) * self.shift, delay, detcoef
+
 
 class BinaryMemoryCapacityTask(MemoryCapacityTask):
     """
