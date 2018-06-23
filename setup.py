@@ -9,5 +9,6 @@ setup(name='reservoirlib',
       url='https://github.com/Nathaniel-Rodriguez/reservoirlib.git',
       install_requires=[
           'numpy',
+          'scipy'
       ],
       include_package_data=True)

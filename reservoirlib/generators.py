@@ -1,8 +1,5 @@
 import numpy as np
-
-
-DEFAULT_INT = np.int64
-DEFAULT_FLOAT = np.float64
+from reservoirlib.utilities import DEFAULT_FLOAT
 
 
 def reservoir_as_edge_list(reservoir, dtype1=None, dtype2=None):
