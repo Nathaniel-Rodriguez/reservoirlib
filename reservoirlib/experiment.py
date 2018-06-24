@@ -133,8 +133,8 @@ def stack_history(inputs, histories, cuts, dtype):
     :return: a stacked array with shape Sx(N+K)
     """
     num_trials = len(inputs)
-    num_neurons = histories[0].shape(1)
-    num_inputs = inputs[0].shape(1)
+    num_neurons = histories[0].shape[1]
+    num_inputs = inputs[0].shape[1]
 
     # This is time-series length following the cut and after stacking
     stacked_inputs_length = np.sum([inputs[i].shape[0] - cuts[i]
@@ -153,13 +153,13 @@ def stack_history(inputs, histories, cuts, dtype):
         cut_history = histories[trial_num][cuts[trial_num]:]  # CxNx1
         stacked_history[index(histories, trial_num, cuts):
                         index(histories, trial_num + 1, cuts),
-                        : cut_history.shape(1)] = np.squeeze(cut_history, axis=2)
+                        : cut_history.shape[1]] = np.squeeze(cut_history, axis=2)
 
         # Cut input time series for this trial and fill full history
         cut_inputs = inputs[trial_num][cuts[trial_num]:]  # CxKx1
         stacked_history[index(inputs, trial_num, cuts):
                         index(inputs, trial_num + 1, cuts),
-                        cut_history.shape(1):] = np.squeeze(cut_inputs, axis=2)
+                        cut_history.shape[1]:] = np.squeeze(cut_inputs, axis=2)
 
     return stacked_history
 

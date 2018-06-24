@@ -356,7 +356,8 @@ class BinaryMemoryCapacityTask(MemoryCapacityTask):
 
     def __init__(self, **kwargs):
         """
-        :param kwargs: MemoryCapacityTask arguments
+        :param kwargs: MemoryCapacityTask arguments except for
+            activation_distribution.
         """
 
         activation_distribution = Distribution("binomial", {'n': 1, 'p': 0.5})
