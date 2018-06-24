@@ -247,17 +247,8 @@ class NbitRecallTask(BaseTask):
         """
 
         prediction_pattern = prediction[self.recall_time:, :-2]
-        print("prediction pattern")
-        print(prediction_pattern)
-        print("target")
-        print(target)
         rounded_prediction = np.rint(prediction_pattern).astype(np.int64)
-        print("rounded pred")
-        print(rounded_prediction)
         rounded_target = np.rint(target).astype(np.int64)
-        print("rounded target")
-        print(rounded_target)
-        print(rounded_target - rounded_prediction)
         if np.count_nonzero(rounded_target - rounded_prediction) == 0:
             return 1
         else:
