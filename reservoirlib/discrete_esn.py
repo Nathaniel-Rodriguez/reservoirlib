@@ -190,6 +190,66 @@ class BaseEchoStateNetwork(ABC):
         'linear': Linear
     }
 
+    @property
+    @abstractmethod
+    def output_type(self):
+        """
+        :return: string, output layer neuron type
+        """
+        pass
+
+    @output_type.setter
+    def output_type(self, val):
+        raise NotImplementedError("Cant change neuron output types")
+
+    @property
+    @abstractmethod
+    def output_neuron_pars(self):
+        """
+        :return: string, output layer neuron parameters
+        """
+        pass
+
+    @output_neuron_pars.setter
+    def output_neuron_pars(self, val):
+        raise NotImplementedError("Cant change neuron output parameters")
+
+    @property
+    @abstractmethod
+    def num_neurons(self):
+        """
+        :return: number of neurons in ESN
+        """
+        pass
+
+    @num_neurons.setter
+    def num_neurons(self, val):
+        raise NotImplementedError("Cant change # neurons")
+    
+    @property
+    @abstractmethod
+    def dtype(self):
+        """
+        :return: returns type of numpy arrays the ESN uses 
+        """
+        pass
+    
+    @dtype.setter
+    def dtype(self, val):
+        raise NotImplementedError("Can't change dtype")
+
+    @property
+    @abstractmethod
+    def history(self):
+        """
+        :return: returns reference to ESN state history 
+        """
+        pass
+    
+    @history.setter
+    def history(self, val):
+        raise NotImplementedError("Not allowed to set history")
+
     @abstractmethod
     def reset(self):
         """
@@ -268,7 +328,7 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         super().__init__(**kwargs)
 
         if dtype is None:
-            self.dtype = DEFAULT_FLOAT
+            self._dtype = DEFAULT_FLOAT
         if neuron_pars is None:
             neuron_pars = {}
         if output_neuron_pars is None:
@@ -282,10 +342,10 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
                                       "array or None")
 
         # Weights
-        self.dtype = dtype
+        self._dtype = dtype
         self.reservoir = reservoir  # NxN
         self.input_weights = input_weights  # NxK
-        self.num_neurons = self.reservoir.shape[0]  # N
+        self._num_neurons = self.reservoir.shape[0]  # N
         if self.input_weights is None:
             self.num_inputs = 0
         else:
@@ -299,8 +359,8 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
             neuron_type.lower()](**neuron_pars)
 
         # Set neuron types (output neuron)
-        self.output_type = output_type
-        self.output_neuron_pars = output_neuron_pars
+        self._output_type = output_type
+        self._output_neuron_pars = output_neuron_pars
         self.output_function = DiscreteEchoStateNetwork.ActivationFunctions[
             output_type.lower()](**output_neuron_pars)
 
@@ -308,14 +368,14 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         self.iteration = 0
 
         # An Nx1 array
-        self.input_state = np.zeros((self.num_neurons, 1), dtype=self.dtype)
+        self.input_state = np.zeros((self._num_neurons, 1), dtype=self._dtype)
 
         # An Nx1 array
-        self.state = self.generate_initial_state(np.zeros((self.num_neurons, 1),
-                                                          dtype=self.dtype))
+        self.state = self.generate_initial_state(np.zeros((self._num_neurons, 1),
+                                                          dtype=self._dtype))
 
         # Will be a TxNx1 array
-        self.history = None
+        self._history = None
 
         # (N+K)xO trained weight matrix
         self.output_weight_matrix = None
@@ -323,11 +383,46 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         self.output_weight_matrix_t = None
 
         # (N+K)x1 state concatenated with inputs
-        self.full_state = np.zeros((self.num_neurons + self.num_inputs, 1),
-                                   dtype=self.dtype)
+        self.full_state = np.zeros((self._num_neurons + self.num_inputs, 1),
+                                   dtype=self._dtype)
 
         # Output record will be an TxO array
         self.output = None
+
+    @property
+    def output_type(self):
+        """
+        :return: string, type of output neurons
+        """
+        return self._output_type
+    
+    @property
+    def output_neuron_pars(self):
+        """
+        :return: parameters for output neurons
+        """
+        return self._output_neuron_pars
+
+    @property
+    def num_neurons(self):
+        """
+        :return: number of neurons in ESN
+        """
+        return self._num_neurons
+
+    @property
+    def history(self):
+        """
+        :return: returns reference to ESN state history 
+        """
+        return self._history
+
+    @property
+    def dtype(self):
+        """
+        :return: returns type of numpy arrays the ESN uses 
+        """
+        return self._dtype
 
     def generate_initial_state(self, x):
         """
@@ -340,7 +435,7 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
             x[:] = 0
             return x
         else:
-            x[:] = self.initial_state(size=(self.num_neurons, 1))
+            x[:] = self.initial_state(size=(self._num_neurons, 1))
             return x
 
     def reset(self):
@@ -364,7 +459,7 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         self.activation_function(self.state)
 
         if record:  # Assigns values from current state to history
-            self.history[self.iteration][:] = self.state[:]
+            self._history[self.iteration][:] = self.state[:]
 
     def no_input_step(self, record=False):
         """
@@ -376,7 +471,7 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         self.activation_function(self.state)
 
         if record:  # Assigns values from current state to history
-            self.history[self.iteration][:] = self.state[:]
+            self._history[self.iteration][:] = self.state[:]
 
     def response(self, input_array):
         """
@@ -385,8 +480,8 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         :return: Ox1 numpy array
         """
 
-        self.full_state[:self.num_neurons] = self.state
-        self.full_state[self.num_neurons:] = input_array
+        self.full_state[:self._num_neurons] = self.state
+        self.full_state[self._num_neurons:] = input_array
         # Ox(N+K) * (N+k)x1
         np.dot(self.output_weight_matrix_t, self.full_state, out=self.full_state)
         return self.output_function(self.full_state)
@@ -414,8 +509,8 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
 
         # Initialize the history for this run
         if record:
-            self.history = np.zeros((num_iter, self.num_neurons, 1),
-                                    dtype=self.dtype)
+            self._history = np.zeros((num_iter, self._num_neurons, 1),
+                                    dtype=self._dtype)
             
         # If not time-series, run step without input
         if input_time_series is None:
@@ -430,7 +525,7 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
                 # Has shape TxO
                 self.output = np.zeros((num_iter,
                                         self.output_weight_matrix_t.shape(0)),
-                                       dtype=self.dtype)
+                                       dtype=self._dtype)
 
             for i in range(num_iter):
                 self.iteration = i

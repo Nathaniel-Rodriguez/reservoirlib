@@ -52,8 +52,9 @@ class BenchmarkExperiment:
             self.esn.reset()
 
         # stack trial data
-        stacked_target = stack_targets(target_trials, output_cuts, dtype)
-        stacked_history = stack_history(input_trials, history_trials, input_cuts, num_inputs, dtype)
+        stacked_target = stack_targets(target_trials, output_cuts, self.esn.dtype)
+        stacked_history = stack_history(input_trials, history_trials, input_cuts,
+                                        self.esn.dtype)
 
         # invert target stack data if applicable
         invert_target_array(stacked_target, self.esn.output_type,
@@ -117,7 +118,7 @@ def stack_targets(target_outputs, cuts, dtype):
     return stacked_target_output
 
 
-def stack_history(inputs, histories, cuts, num_inputs, dtype):
+def stack_history(inputs, histories, cuts, dtype):
     """
 
     :param inputs: a list of numpy arrays with shape TxKx1. Data structure shape
@@ -133,6 +134,7 @@ def stack_history(inputs, histories, cuts, num_inputs, dtype):
     """
     num_trials = len(inputs)
     num_neurons = histories[0].shape(1)
+    num_inputs = inputs[0].shape(1)
 
     # This is time-series length following the cut and after stacking
     stacked_inputs_length = np.sum([inputs[i].shape[0] - cuts[i]
@@ -149,8 +151,8 @@ def stack_history(inputs, histories, cuts, num_inputs, dtype):
 
         # Cut history and fill the full history
         cut_history = histories[trial_num][cuts[trial_num]:]  # CxNx1
-        stacked_history[index(inputs, trial_num, cuts):
-                        index(inputs, trial_num + 1, cuts),
+        stacked_history[index(histories, trial_num, cuts):
+                        index(histories, trial_num + 1, cuts),
                         : cut_history.shape(1)] = np.squeeze(cut_history, axis=2)
 
         # Cut input time series for this trial and fill full history
