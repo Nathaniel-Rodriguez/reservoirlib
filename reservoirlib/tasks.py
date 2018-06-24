@@ -118,7 +118,7 @@ class NbitRecallTask(BaseTask):
         self.loop_unique_input = loop_unique_input
         self.cue_time = self.start_time + self.pattern_length + self.distraction_duration
         self.recall_time = self.cue_time + 1
-        self.distractor_state_time = self.start_time + self.pattern_length
+        self.distractor_start_time = self.start_time + self.pattern_length
         self.total_duration = self.start_time + self.pattern_length + \
                               self.distraction_duration + 1 + self.pattern_length
         self.input_cut = self.recall_time
@@ -229,11 +229,11 @@ class NbitRecallTask(BaseTask):
         input_signal[self.start_time:self.start_time + self.pattern_length,
         :self.pattern_dimension] = target_output
         # Create distractor series (it is the second to last dimension)
-        input_signal[self.distractor_state_time:
-                     self.distractor_state_time + self.distraction_duration,
+        input_signal[self.distractor_start_time:
+                     self.distractor_start_time + self.distraction_duration,
                      :-2] = self.distractor_value
         # Create cue series (it is the last dimension)
-        input_signal[self.cue_time: -1] = self.cue_value
+        input_signal[self.cue_time, -1] = self.cue_value
 
         # target is already correct size, so output cut is 0
         # input cut needs to be set at recall time so it has same length as target
