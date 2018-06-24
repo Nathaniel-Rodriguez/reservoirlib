@@ -121,6 +121,8 @@ class NbitRecallTask(BaseTask):
         self.distractor_state_time = self.start_time + self.pattern_length
         self.total_duration = self.start_time + self.pattern_length + \
                               self.distraction_duration + 1 + self.pattern_length
+        self.input_cut = self.recall_time
+        self.output_cut = 0
         if self.loop_unique_input:
             self.looping_index = 0  # used for drawing from shuffled patterns
             self.pre_generate_all_patterns()
@@ -233,7 +235,9 @@ class NbitRecallTask(BaseTask):
         # Create cue series (it is the last dimension)
         input_signal[self.cue_time: -1] = self.cue_value
 
-        return input_signal, target_output
+        # target is already correct size, so output cut is 0
+        # input cut needs to be set at recall time so it has same length as target
+        return input_signal, target_output, self.input_cut, self.output_cut
 
     def validate(self, prediction, target):
         """
@@ -280,6 +284,8 @@ class MemoryCapacityTask(BaseTask):
         self.num_lags = num_lags
         self.shift = shift
         self.max_lag = num_lags * shift
+        self.input_cut = self.cut + self.max_lag
+        self.output_cut = 0
 
         self._input_dimensions = 1
         self._output_dimensions = num_lags
@@ -315,7 +321,7 @@ class MemoryCapacityTask(BaseTask):
                                                self.duration + self.cut +
                                                (i+1)*self.shift, 0]
 
-        return input_signal, target_signal
+        return input_signal, target_signal, self.input_cut, self.output_cut
 
     def validate(self, prediction, target):
         """
