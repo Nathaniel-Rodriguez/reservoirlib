@@ -231,7 +231,7 @@ class NbitRecallTask(BaseTask):
         # Create distractor series (it is the second to last dimension)
         input_signal[self.distractor_start_time:
                      self.distractor_start_time + self.distraction_duration,
-                     :-2] = self.distractor_value
+                     -2] = self.distractor_value
         # Create cue series (it is the last dimension)
         input_signal[self.cue_time, -1] = self.cue_value
 
