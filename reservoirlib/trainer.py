@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from scipy import linalg
 from reservoirlib.utilities import DEFAULT_FLOAT
 

@@ -1,5 +1,5 @@
 import numpy as np
-from abc import ABC
+from abc import ABC, abstractmethod
 from reservoirlib.utilities import DEFAULT_FLOAT
 
 
