@@ -303,8 +303,8 @@ class MemoryCapacityTask(BaseTask):
         :return: the input signal of the task
         """
 
-        return self.activation_distribution((self.cut + self.duration
-                                             + self.max_lag, 1)
+        return self.activation_distribution(size=(self.cut + self.duration
+                                                  + self.max_lag, 1)
                                             ).astype(dtype=self.dtype)
 
     def generate_signal(self):
