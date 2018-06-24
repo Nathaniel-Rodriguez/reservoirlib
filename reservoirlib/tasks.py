@@ -1,5 +1,6 @@
 import numpy as np
 from abc import ABC
+from reservoirlib.utilities import DEFAULT_FLOAT
 
 
 class BaseTask(ABC):
@@ -14,7 +15,7 @@ class BaseTask(ABC):
         """
 
         if dtype is None:
-            self.dtype = np.float64
+            self.dtype = DEFAULT_FLOAT
         else:
             self.dtype = dtype
 
