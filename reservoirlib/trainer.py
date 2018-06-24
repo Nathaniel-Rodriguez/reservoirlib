@@ -54,4 +54,7 @@ class LeastSquaredErrorTrainer(BaseTrainer):
         # solution: (N+K)xO
         solution, residuals, rank, sing = linalg.lstsq(stacked_history,
                                                        stacked_target)
-        return solution
+        if solution.dtype != self.dtype:
+            return solution.astype(self.dtype)
+        else:
+            return solution
