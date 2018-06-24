@@ -1,6 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
 from reservoirlib.utilities import DEFAULT_FLOAT
+from reservoirlib.distribution import Distribution
 
 
 class BaseTask(ABC):
@@ -317,7 +318,7 @@ class MemoryCapacityTask(BaseTask):
 
         target_signal = np.zeros((self.duration, self.num_lags), dtype=self.dtype)
         for i in range(target_signal.shape[1]):
-            target_signal[:, i] = input_signal[self.cut + (i+1) * self.shift :
+            target_signal[:, i] = input_signal[self.cut + (i+1) * self.shift:
                                                self.duration + self.cut +
                                                (i+1)*self.shift, 0]
 
@@ -325,17 +326,21 @@ class MemoryCapacityTask(BaseTask):
 
     def validate(self, prediction, target):
         """
-        :param prediction: full time-series response of model
-        :param target: target array
-        :return: Memory capacity
+        :param prediction: full time-series response of model Tx(# of lags)
+        :param target: target array (cut time)x(# of lags)
+        :return: Memory capacity, array of delays, coefficient of
+            determination array
         """
+
+        # cut prediction
+        cut_prediction = prediction[self.input_cut:]
 
         # Evaluate correlation coefficient for all lags
         delay = np.array([i * self.shift
                           for i in reversed(range(1, self.num_lags + 1))])
         detcoef = np.zeros(self.num_lags)
         for i in range(self.num_lags):
-            cor_coef = np.corrcoef(prediction[:, i], target[:, i])[0, 1]
+            cor_coef = np.corrcoef(cut_prediction[:, i], target[:, i])[0, 1]
             if np.isnan(cor_coef):
                 detcoef[i] = 0.0
             else:
@@ -349,33 +354,11 @@ class BinaryMemoryCapacityTask(MemoryCapacityTask):
     Implements the MC task, but with binary instead of graded outputs.
     """
 
-    def __init__(self, seed=None, **kwargs):
+    def __init__(self, **kwargs):
         """
-        :param seed: for the RNG, if None (default), then it uses numpy
-            RandomState's default seed
         :param kwargs: MemoryCapacityTask arguments
         """
+
+        activation_distribution = Distribution("binomial", {'n': 1, 'p': 0.5})
+        kwargs['activation_distribution'] = activation_distribution
         super().__init__(**kwargs)
-
-        self._seed = seed
-        if seed is None:
-            self._rng = np.random.RandomState()
-        else:
-            self._rng = np.random.RandomState(self._seed)
-
-    @property
-    def seed(self):
-        return self._seed
-
-    @seed.setter
-    def seed(self, value):
-        self._seed = value
-        self._rng.seed(self._seed)
-
-    def generate_input_signal(self):
-        """
-        :return: the input signal of the task
-        """
-
-        return self._rng.binomial(n=1, p=0.5, size=(self.cut + self.duration
-                                  + self.max_lag, 1)).astype(dtype=self.dtype)
