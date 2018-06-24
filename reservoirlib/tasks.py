@@ -53,6 +53,9 @@ class BaseTask(ABC):
             Time will always be the most minor dimension and it can be of
             variable length. The input and output arrays don't have to be
             of the same length or dimension.
+            The tuples should also contain the input and output cuts respectively.
+            This is the number of time-steps to drop from training for a given
+            generated sequence of both the input series and the target series.
         """
         pass
 
@@ -123,8 +126,8 @@ class NbitRecallTask(BaseTask):
             self.looping_index = 0  # used for drawing from shuffled patterns
             self.pre_generate_all_patterns()
 
-        self._input_dimensions = (self.pattern_dimension + 2,)  # + cue + distractor
-        self._output_dimensions = (self.pattern_dimension,)
+        self._input_dimensions = self.pattern_dimension + 2  # + cue + distractor
+        self._output_dimensions = self.pattern_dimension
 
     @property
     def input_dimensions(self):
@@ -279,8 +282,8 @@ class MemoryCapacityTask(BaseTask):
         self.shift = shift
         self.max_lag = num_lags * shift
 
-        self.input_dimensions = (1,)
-        self.output_dimensions = (num_lags,)
+        self.input_dimensions = 1
+        self.output_dimensions = num_lags
 
     @property
     def input_dimensions(self):
@@ -297,7 +300,7 @@ class MemoryCapacityTask(BaseTask):
 
         return self.activation_distribution((self.cut + self.duration
                                              + self.max_lag, 1)
-                                             ).astype(dtype=self.dtype)
+                                            ).astype(dtype=self.dtype)
 
     def generate_signal(self):
         """

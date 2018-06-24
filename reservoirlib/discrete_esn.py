@@ -1,5 +1,4 @@
 import numpy as np
-from scipy import linalg
 from abc import ABC
 from reservoirlib.utilities import DEFAULT_FLOAT
 from reservoirlib.utilities import normalize_root_mean_squared_error
@@ -10,7 +9,6 @@ class BaseActivator(ABC):
     """
     Defines the interface for the Activator class
     """
-
     @abstractmethod
     def __call__(self, x):
         """
@@ -215,11 +213,10 @@ class BaseEchoStateNetwork(ABC):
         pass
 
     @abstractmethod
-    def train(self, input_time_series, target_output, *args, **kwargs):
+    def set_output_weights(self, weight_matrix):
         """
-        sets the output weights of the ESN given # trials of input
-        :param input_time_series: A list or array of input time-series
-        :param target_output: A list or array of target time-series
+        Takes the weights determined by the regression and assigned them
+        to the ESNs output layer.
         """
         pass
 
@@ -255,7 +252,6 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         :param neuron_type: string (tanh, sigmoid, heaviside, linear)
         :param output_type: string (tanh, sigmoid, heaviside, identity)
         :param initial_state: Distribution, Default: Zeros
-            For Distribution class see reservoirgen
         :param neuron_pars: dict of parameters for neuron. Default: {}
         :param output_neuron_pars: dict of parameters for output neuron.
             Default: {}
@@ -446,19 +442,6 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         if output:
             return self.output
 
-    def invert_target_array(self, target_output):
-        """
-        Creates a copy of the target_output that will be inverted
-        :param target_output: a numpy array
-        """
-
-        target_output = target_output.copy()
-        if self.output_type == 'sigmoid':
-            return InvertedSigmoid(**self.output_neuron_pars)(target_output)
-
-        elif self.output_type == 'tanh':
-            return ArcTanh()(target_output)
-
     def set_output_weights(self, weight_matrix):
         """
         Takes the weights determined by the regression and assigned them
@@ -472,123 +455,6 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         # performance. Using copy() defaults the resulting array to C-order
         # memory layout.
         self.output_weight_matrix_t = weight_matrix.transpose().copy()
-
-    def train(self, input_time_series, target_output, cuts=None, invert_target=False,
-              cut_output=False):
-        """
-        Trains the agent using either an single time series input or multiple
-        time-series.
-        
-        :param input_time_series: a list of numpy arrays with shape QxTxKx1 or TxKx1.
-            Where Q=#trials, T=time, K=#inputs
-            If it has 4 dimensions, multi-trial training is used.
-            If it has 3 dimensions, single trial training is used.
-            If input_time_series is a list, it is assumed that it is a list
-            of arrays with shape TxKx1.
-        :param target_output: a numpy array with shape QxTxOx1 or TxOx1.
-            Where O=#outputs.
-            Dimension should match input time series.
-        :param cuts: Removes first cuts time steps from reservoir history from
-            training evaluation. cuts can either be a sequence or scalar value.
-            If multi-trial is used, then cuts is assumed to be a sequence, a cut
-            for each trial.
-            If single-trial is used, then cuts is assumed to be a scalar.
-            If None, no cut is used.
-            Default: None
-        :param invert_target: Specifies whether to invert the target values for
-            training. Maybe necessary for tanh and sigmoid functions to convert
-            to a linear space for training. Default: False
-        :param cut_output: true/false, determine whether to apply the cuts on the
-            input time-series to the target time-series
-        :return: None
-
-        TODO: Make work with list of time-series
-        TODO: Make work with variable time-series lengths
-        TODO: Make work with AxB input array instead of AxBx1 by doing it internally
-        """
-
-        num_trials = input_time_series.shape[0]
-
-        # Carry out inversion if option is selected
-        if invert_target:
-            target_output = self.invert_target_array(target_output)
-
-        # Check shapes. If 3 dimensions are used, expand array by a single
-        # dimension. This is so that it can be handled as if it were 4-dims
-        if (len(input_time_series.shape) == 3) and (len(target_output.shape) == 3):
-            input_time_series = np.extend_dims(input_time_series, axis=0)  # new view
-            target_output = np.extend_dims(target_output, axis=0)  # new view
-            if cuts is None:
-                cuts = [0]
-            else:
-                cuts = [cuts]
-
-        elif (len(input_time_series.shape) == 4) and (len(target_output.shape) == 4):
-            if cuts is None:
-                cuts = [0 for i in range(num_trials)]
-
-        else:
-            raise NotImplementedError("input and target must have same number"
-                                      " of dimensions (either 3 or 4)")
-
-        if cut_output:
-            output_cut = cuts
-        else:
-            output_cut = [0 for i in range(num_trials)]
-
-        # This is time-series length following the cut and after stacking
-        stacked_time_series_length = np.sum([input_time_series[i].shape[0] - cuts[i]
-                                             for i in range(num_trials)])
-
-        # determines the stack index, for assigning output of each trial
-        # to the proper place in the full stacked matrix
-        def index(x, k, c):
-            return int(np.sum([x[v].shape[0] - c[v] for v in range(k)]))
-
-        # With cut introduced, the stacked full history is a Sx(N+K) matrix
-        # where S=stacked length
-        stacked_full_history = np.zeros((stacked_time_series_length,
-                                         self.num_inputs + self.num_neurons),
-                                        dtype=self.dtype)
-        # Go through each trail, generate output and stack the C length axis onto the S
-        # axis of the stacked array
-        for trial_num in range(num_trials):
-            # make sure recording is set to True, necessary for training and run trial
-            self.run(input_time_series[trial_num], record=True)
-
-            # Cut history and fill the full history
-            cut_history = self.history[cuts[trial_num]:]  # CxNx1
-            stacked_full_history[index(input_time_series, trial_num, cuts):
-                                 index(input_time_series, trial_num + 1, cuts),
-                                 : cut_history.shape(1)] = np.squeeze(cut_history,
-                                                                      axis=2)
-
-            # Cut input time series for this trial and fill full history
-            cut_input_time_series = input_time_series[trial_num][cuts[trial_num]:]  # CxKx1
-            stacked_full_history[index(input_time_series, trial_num, cuts):
-                                 index(input_time_series, trial_num + 1, cuts),
-                                 cut_history.shape(1):] = np.squeeze(cut_input_time_series,
-                                                                     axis=2)
-
-            # After trial is complete the simulation needs to be reset
-            self.reset()
-
-        # Stack target output:
-        num_outputs = target_output[0].shape[1]
-        stacked_target_output = np.zeros((stacked_time_series_length, num_outputs),
-                                         dtype=self.dtype)  # SxO
-        for trial_num in range(num_trials):
-            cut_target_output = target_output[trial_num][output_cut[trial_num]:]  # CxOx1
-            stacked_target_output[index(target_output, trial_num, output_cut):
-                                  index(target_output, trial_num + 1, output_cut),
-                                  :] = np.squeeze(cut_target_output, axis=2)
-
-        # Run regression and then set the ESN output weights
-        # input: Sx(N+K) and SxO
-        # solution: (N+K)xO
-        solution, residuals, rank, sing = linalg.lstsq(stacked_full_history,
-                                                       stacked_target_output)
-        self.set_output_weights(solution)
 
     def predict(self, input_time_series, target_output, cut=0,
                 target_range=None, error_type='NRMSE', analysis_mode=False):
