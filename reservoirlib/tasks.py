@@ -22,8 +22,7 @@ class BaseTask(ABC):
     @abstractmethod
     def input_dimensions(self):
         """
-        Defines a tuple/sequence of the input shape (not including time)
-        :return: returns shape
+        :return: returns # input dimensions
         """
         pass
 
@@ -35,8 +34,7 @@ class BaseTask(ABC):
     @abstractmethod
     def output_dimensions(self):
         """
-        Defines a tuple/sequence of the output shape (not including time)
-        :return: returns shape
+        :return: returns # output dimensions
         """
         pass
 
@@ -282,8 +280,8 @@ class MemoryCapacityTask(BaseTask):
         self.shift = shift
         self.max_lag = num_lags * shift
 
-        self.input_dimensions = 1
-        self.output_dimensions = num_lags
+        self._input_dimensions = 1
+        self._output_dimensions = num_lags
 
     @property
     def input_dimensions(self):

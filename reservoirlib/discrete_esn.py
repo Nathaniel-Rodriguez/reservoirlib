@@ -395,7 +395,7 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         :return: string, type of output neurons
         """
         return self._output_type
-    
+
     @property
     def output_neuron_pars(self):
         """
