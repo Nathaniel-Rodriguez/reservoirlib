@@ -1,7 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
 from reservoirlib.utilities import DEFAULT_FLOAT
-from reservoirlib.distribution import Distribution
+from reservoirlib.distributions import Distribution
 
 
 class BaseTask(ABC):
