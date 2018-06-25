@@ -354,12 +354,14 @@ class BinaryMemoryCapacityTask(MemoryCapacityTask):
     Implements the MC task, but with binary instead of graded outputs.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, seed=None, **kwargs):
         """
+        :param seed: seed for RNG
         :param kwargs: MemoryCapacityTask arguments except for
             activation_distribution.
         """
 
-        activation_distribution = Distribution("binomial", {'n': 1, 'p': 0.5})
+        activation_distribution = Distribution("binomial", {'n': 1, 'p': 0.5},
+                                               seed=seed)
         kwargs['activation_distribution'] = activation_distribution
         super().__init__(**kwargs)
