@@ -81,6 +81,37 @@ class BenchmarkExperiment:
         return self.task.validate(prediction, target_output)
 
 
+class DynamicsExperiment:
+    """
+    Provides a framework for evaluating dynamical attributes of a neural
+    network.
+    """
+
+    def __init__(self, esn, task, metric):
+        """
+        :param esn: an object that should conform to the BaseESN interface
+        :param task: an object that will generate input time-series
+            task should conform the BaseTask interface
+        :param metric: a function that takes as arguments
+            the history of an ESN and evaluates. Should conform to BaseMetric
+            interface.
+        """
+
+        self.esn = esn
+        self.task = task
+        self.metric = metric
+
+    def evaluate_metric(self):
+        """
+        Run the ESN on the task
+        :return: the metric evaluated on the history of the ESN
+        """
+
+        input_signal, _, _, _ = self.task.generate_signal()
+        self.esn.run(np.expand_dims(input_signal, axis=2), record=True, output=False)
+        return self.metric(np.squeeze(self.esn.history, axis=2))
+
+
 def index(x, k, c):
     """
     Determines the stack index, for assigning output of each trial to the proper
