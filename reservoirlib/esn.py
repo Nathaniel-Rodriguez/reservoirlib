@@ -568,57 +568,6 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         # memory layout.
         self.output_weight_matrix_t = weight_matrix.transpose().copy()
 
-    def predict(self, input_time_series, target_output, cut=0,
-                target_range=None, error_type='NRMSE', analysis_mode=False):
-        """
-        Evaluates the performance of a trained ESN on a given input trial.
-        T=time steps
-        K=# inputs
-        O=# outputs
-
-        :param input_time_series: a TxKx1 numpy array
-        :param target_output: a TxOx1 or TxO numpy array
-        :param cut: scalar, number of initial time-steps to drop
-        :param target_range: tuple (target min value, target max value)
-            Used for normalizing the RMSE. Default: Uses target_output min/max
-        :param error_type: 'NRMSE' or 'AE' (absolute error)
-        :param analysis_mode: T/F Specifies whether to return all outputs.
-            Default: False
-        :return: performance
-            or performance, cut_prediction, target_output, prediction
-        """
-
-        # TxO
-        prediction = self.run(input_time_series, record=analysis_mode,
-                              output=True)
-
-        cut_prediction = prediction[cut:]  # CxO
-
-        cut_target_output = target_output[cut:]  # CxOx1
-        cut_target_output = np.squeeze(cut_target_output, axis=1)  # CxO
-        residuals = np.abs(cut_prediction - cut_target_output)  # CxO
-
-        performance = None
-        if error_type == 'NRMSE':
-            if not (target_range is None):
-                min_target = target_range[0]
-                max_target = target_range[1]
-            else:
-                min_target = np.min(cut_target_output)
-                max_target = np.max(cut_target_output)
-
-            performance = normalize_root_mean_squared_error(residuals,
-                                                            max_target,
-                                                            min_target)
-
-        elif error_type == 'AE':
-            performance = absolute_error(residuals)
-
-        if analysis_mode:
-            return performance, cut_prediction, target_output, prediction
-        else:
-            return performance
-
 
 if __name__ == '__main__':
     """
