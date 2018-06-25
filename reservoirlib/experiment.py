@@ -1,6 +1,6 @@
 import numpy as np
-from reservoirlib.discrete_esn import ArcTanh
-from reservoirlib.discrete_esn import InvertedSigmoid
+from reservoirlib.esn import ArcTanh
+from reservoirlib.esn import InvertedSigmoid
 
 
 class BenchmarkExperiment:
