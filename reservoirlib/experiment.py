@@ -44,9 +44,11 @@ class BenchmarkExperiment:
         for i in range(self.num_training_trials):
             input_trials[i], target_trials[i], input_cuts[i], output_cuts[i] = \
                 self.task.generate_signal()
+            input_trials[i] = np.expand_dims(input_trials[i], axis=2)
+            target_trials[i] = np.expand_dims(target_trials[i], axis=2)
             self.esn.run(input_trials[i], record=True, output=False)
             history_trials[i] = np.zeros((input_trials[i].shape[0],
-                                          self.esn.num_neurons),
+                                          self.esn.num_neurons, 1),
                                          dtype=self.esn.dtype)
             history_trials[i][:] = self.esn.history
             self.esn.reset()
@@ -110,10 +112,9 @@ def stack_targets(target_outputs, cuts, dtype):
     stacked_target_output = np.zeros((stacked_target_length, num_outputs),
                                      dtype=dtype)  # SxO
     for trial_num in range(num_trials):
-        cut_target_output = target_outputs[trial_num][cuts[trial_num]:]  # CxOx1
         stacked_target_output[index(target_outputs, trial_num, cuts):
                               index(target_outputs, trial_num + 1, cuts),
-        :] = np.squeeze(cut_target_output, axis=2)
+        :] = np.squeeze(target_outputs[trial_num][cuts[trial_num]:], axis=2)
 
     return stacked_target_output
 

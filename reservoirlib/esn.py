@@ -451,6 +451,7 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         """
         Ideally the view should be over the major axis, which for numpy is rows.
         :param input_array: a Kx1 numpy array
+        :param record: whether to record state in history
         """
 
         np.dot(self.input_weights, input_array, out=self.input_state)
@@ -510,7 +511,7 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         # Initialize the history for this run
         if record:
             self._history = np.zeros((num_iter, self._num_neurons, 1),
-                                    dtype=self._dtype)
+                                     dtype=self._dtype)
             
         # If not time-series, run step without input
         if input_time_series is None:
@@ -520,22 +521,37 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
 
         # Evaluate for time series input
         else:
-            # Initialize the output for this run
-            if hasattr(self, "output_weight_matrix_t"):
-                # Has shape TxO
-                self.output = np.zeros((num_iter,
-                                        self.output_weight_matrix_t.shape(0)),
-                                       dtype=self._dtype)
+            if output:
+                # Initialize the output for this run
+                self._initialize_output(num_iter)
 
             for i in range(num_iter):
                 self.iteration = i
                 self.step(input_time_series[i], record=record)
+
                 if output:
                     self.output[i, :] = np.squeeze(self.response(input_time_series[i]),
                                                    axis=1)
 
         if output:
             return self.output
+
+    def _initialize_output(self, num_iter):
+        """
+        Only allocates memory if current array doesn't exist or isn't the
+        right shape.
+        :return: output array with shape TxO
+        """
+
+        if hasattr(self, "output_weight_matrix_t") and hasattr(self, "output"):
+            if self.output.shape[0] == num_iter:
+                return self.output
+
+        else:
+            # Has shape TxO
+            return np.zeros((num_iter,
+                             self.output_weight_matrix_t.shape[0]),
+                            dtype=self._dtype)
 
     def set_output_weights(self, weight_matrix):
         """
