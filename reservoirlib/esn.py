@@ -386,7 +386,7 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         self.full_state = np.zeros((self._num_neurons + self.num_inputs, 1),
                                    dtype=self._dtype)
 
-        # Output record will be an TxO array
+        # Output record will be an TxOx1 array
         self.output = None
 
     @property
@@ -474,18 +474,20 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         if record:  # Assigns values from current state to history
             self._history[self.iteration][:] = self.state[:]
 
-    def response(self, input_array):
+    def response(self, input_array, output_buffer):
         """
         Calculate the networks response given an input_array view
+        Writes in-place onto the output_buffer, which should be the output
+        attribute.
         :param input_array: a Kx1 numpy array
-        :return: Ox1 numpy array
+        :param output_buffer: an Ox1 array to write the output neuron states to
         """
 
         self.full_state[:self._num_neurons] = self.state
         self.full_state[self._num_neurons:] = input_array
-        # Ox(N+K) * (N+k)x1
-        np.dot(self.output_weight_matrix_t, self.full_state, out=self.full_state)
-        return self.output_function(self.full_state)
+        # Ox(N+K) * (N+k)x1 = Ox1
+        np.dot(self.output_weight_matrix_t, self.full_state, out=output_buffer)
+        self.output_function(output_buffer)
 
     def run(self, input_time_series=None, num_iter=None, record=False,
             output=False):
@@ -523,18 +525,17 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         else:
             if output:
                 # Initialize the output for this run
-                self._initialize_output(num_iter)
+                self.output = self._initialize_output(num_iter)
 
             for i in range(num_iter):
                 self.iteration = i
                 self.step(input_time_series[i], record=record)
 
                 if output:
-                    self.output[i, :] = np.squeeze(self.response(input_time_series[i]),
-                                                   axis=1)
+                    self.response(input_time_series[i], self.output[i])
 
         if output:
-            return self.output
+            return np.squeeze(self.output, axis=2)
 
     def _initialize_output(self, num_iter):
         """
@@ -543,14 +544,14 @@ class DiscreteEchoStateNetwork(BaseEchoStateNetwork):
         :return: output array with shape TxO
         """
 
-        if hasattr(self, "output_weight_matrix_t") and hasattr(self, "output"):
+        if not (self.output_weight_matrix_t is None) and not (self.output is None):
             if self.output.shape[0] == num_iter:
                 return self.output
 
         else:
             # Has shape TxO
             return np.zeros((num_iter,
-                             self.output_weight_matrix_t.shape[0]),
+                             self.output_weight_matrix_t.shape[0], 1),
                             dtype=self._dtype)
 
     def set_output_weights(self, weight_matrix):

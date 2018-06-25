@@ -74,8 +74,10 @@ class BenchmarkExperiment:
         :return: The task specific validation output
         """
 
-        input_signal, target_output = self.task.generate_signal()
-        prediction = self.esn.run(input_signal, output=True)
+        input_signal, target_output, in_cut, out_cut = self.task.generate_signal()
+        prediction = self.esn.run(np.expand_dims(input_signal, axis=2),
+                                  output=True)
+        print(prediction.shape, target_output.shape)
         return self.task.validate(prediction, target_output)
 
 
