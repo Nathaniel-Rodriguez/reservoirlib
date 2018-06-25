@@ -4,12 +4,12 @@ computers and echo state networks. It was developed for Python 3 and tested on
 Python 3.5+.
 
 ### Library contents
-#### distribution
+#### distributions
 Contains a class that wraps around Numpy's RandomState. You can use it with tasks
 and reservoirs that need random numbers drawn for them.
 #### esn
 Contains the echo state network (ESN) classes and activation functions.
-#### experiment
+#### experiments
 Contains an experiment class that uses ESNs, trainers, and tasks, to run an
 experiment. An experiment involves the generation of data from
 the tasks and the generation of output weights for the ESN given a cost
@@ -27,7 +27,7 @@ Contains classes that can be used to evaluate the dynamical behavior of an ESN.
 A series of tasks that an ESN might perform. Currently there is the Nbit memory
 task and Memory Capacity task. These classes generate input and target signals
 as well as define methods for validating model target signals.
-#### trainer
+#### trainers
 Contains classes that define the cost function that will be optimized along with
 the optimizer itself.
 #### utilities
