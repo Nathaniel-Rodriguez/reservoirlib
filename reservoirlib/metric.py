@@ -1,4 +1,4 @@
-from reservoirlib.utilities import DEFAULT_FLOAT
+from reservoirlib.utility import DEFAULT_FLOAT
 from abc import ABC, abstractmethod
 import numpy as np
 

@@ -1,8 +1,8 @@
 import numpy as np
 from abc import ABC, abstractmethod
-from reservoirlib.utilities import DEFAULT_FLOAT
-from reservoirlib.utilities import normalize_root_mean_squared_error
-from reservoirlib.utilities import absolute_error
+from reservoirlib.utility import DEFAULT_FLOAT
+from reservoirlib.utility import normalize_root_mean_squared_error
+from reservoirlib.utility import absolute_error
 
 
 class BaseActivator(ABC):

@@ -1,11 +1,11 @@
 import numpy as np
 from graphgen.lfr_generators import unweighted_directed_lfr_as_adj
-from reservoirlib.distributions import Distribution
-from reservoirlib.experiments import BenchmarkExperiment
-from reservoirlib.trainers import LeastSquaredErrorTrainer
-from reservoirlib.tasks import BinaryMemoryCapacityTask
-from reservoirlib.generators import generate_reservoir_input_weights
-from reservoirlib.generators import generate_adj_reservoir_from_adj_matrix
+from reservoirlib.distribution import Distribution
+from reservoirlib.experiment import BenchmarkExperiment
+from reservoirlib.trainer import LeastSquaredErrorTrainer
+from reservoirlib.task import BinaryMemoryCapacityTask
+from reservoirlib.generator import generate_reservoir_input_weights
+from reservoirlib.generator import generate_adj_reservoir_from_adj_matrix
 from reservoirlib.esn import DiscreteEchoStateNetwork
 
 

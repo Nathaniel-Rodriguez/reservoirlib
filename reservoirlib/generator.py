@@ -1,5 +1,5 @@
 import numpy as np
-from reservoirlib.utilities import DEFAULT_FLOAT
+from reservoirlib.utility import DEFAULT_FLOAT
 
 
 def reservoir_as_edge_list(reservoir, dtype1=None, dtype2=None):

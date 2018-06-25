@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from scipy import linalg
-from reservoirlib.utilities import DEFAULT_FLOAT
+from reservoirlib.utility import DEFAULT_FLOAT
 
 
 class BaseTrainer(ABC):
