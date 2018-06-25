@@ -59,8 +59,9 @@ class BenchmarkExperiment:
                                         self.esn.dtype)
 
         # invert target stack data if applicable
-        invert_target_array(stacked_target, self.esn.output_type,
-                            self.esn.output_neuron_pars)
+        if self.invert_target_of_training:
+            invert_target_array(stacked_target, self.esn.output_type,
+                                self.esn.output_neuron_pars)
 
         # train on data
         solution = self.trainer(stacked_history, stacked_target)
@@ -77,7 +78,6 @@ class BenchmarkExperiment:
         input_signal, target_output, in_cut, out_cut = self.task.generate_signal()
         prediction = self.esn.run(np.expand_dims(input_signal, axis=2),
                                   output=True)
-        print(prediction.shape, target_output.shape)
         return self.task.validate(prediction, target_output)
 
 
