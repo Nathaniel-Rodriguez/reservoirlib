@@ -36,17 +36,21 @@ class ActivationMetric(BaseMetric):
     Calculates the level of activation of neurons in a neural network.
     """
 
-    def __init__(self, cut=0, time_average=False, **kwargs):
+    def __init__(self, cut=0, time_average=False, fractional_activity=False,
+                 **kwargs):
         """
         :param cut: The number of time-steps to drop
         :param time_average: Whether to divide activity by the number of
             times-steps. Default: False
+        :param fractional_activity: whether to divide activity by the number of
+            nodes in the network. Default: False
         :param kwargs: BaseMetric arguments
         """
 
         super().__init__(**kwargs)
         self.cut = cut
         self.time_average = time_average
+        self.fractional_activity = fractional_activity
 
     def __call__(self, history):
         """
@@ -58,5 +62,8 @@ class ActivationMetric(BaseMetric):
         if self.time_average:
             remaining = history.shape[0] - self.cut
             np.divide(activity, remaining, out=activity)
+
+        if self.fractional_activity:
+            np.divide(activity, history.shape[1], out=activity)
 
         return activity
