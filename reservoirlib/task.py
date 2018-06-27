@@ -100,7 +100,7 @@ class NbitRecallTask(BaseTask):
             patterns are generated.
         :param num_patterns: if loop unique is true, you can pick the number of
             patterns to memorize and during evaluation this full set will be
-            iterated over only (reseting the loop unique) Defaults: None
+            iterated over only (resetting the loop unique) Defaults: None
             If None it uses all available patterns.
             NOTE: Make sure to set the number of training trials and evaluation
             trials to be equal to this value so that you compare performance on
@@ -272,7 +272,8 @@ class MemoryCapacityTask(BaseTask):
     Implements the MC task used by Jaeger (pretty close to it I believe)
     """
 
-    def __init__(self, duration, activation_distribution, cut=0, num_lags=1, shift=1, **kwargs):
+    def __init__(self, duration, activation_distribution, cut=0, num_lags=1,
+                 shift=1, **kwargs):
         """
         :param duration: the number of trainable time-steps to generate the
             signal for.

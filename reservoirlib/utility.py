@@ -44,3 +44,54 @@ def absolute_error(residuals):
 
     np.absolute(residuals, out=residuals)
     return np.sum(residuals)
+
+
+def run_mpi_experiment(f, parameters, savefile=None, return_results=False):
+    """
+    Only use this if mpi4py is installed. This function is for allowing users
+    to run experiments over many cpu's with a range of parameter settings (say
+    to produce plots or contours of how results change with one or more
+    parameters). f should be a function or partial function that just takes
+    a set of parameters as an argument and returns some result. Parameters should
+    be a list of parameter sets, which will be distributed over the nodes.
+
+    The run involves executing each parameter set and gathering the results
+    from the various nodes into a list, where each result matches its
+    corresponding parameter set in the given list. If the user wants to "loop"
+    over multiple parameters, then flatten that list and provide the flattened
+    list as an argument, then unflatten the result list into the desired shape.
+
+    The result list can be pickled and saved by the root node into a file
+    if a filename is provided. Optionally the results can be returned from
+    the function.
+
+    :param f: a function that results some result and takes a single argument,
+        a parameter set/dict/etc.
+    :param parameters: a list of parameters
+    :param savefile: name of file to save results. Default: None (doesn't save
+        if set to None)
+    :param return_results: Default: False
+    :return: None, optionally a list of results
+    """
+
+    import math
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    size = comm.Get_size()
+    rank = comm.Get_rank()
+
+    chunksize = int(math.ceil(len(parameters) / size))
+    tasks_by_rank = [parameters[i*chunksize: i*chunksize+chunksize]
+                     for i in range(size)]
+    all_results = [[] for i in range(size)]
+    globbed_results = []
+    for parameters in tasks_by_rank[rank]:
+        globbed_results.append(f(parameters))
+
+    all_results = comm.gather(globbed_results, root=0)
+    if rank == 0:
+        if not (savefile is None):
+            save(all_results, savefile)
+
+    if return_results:
+        return all_results
