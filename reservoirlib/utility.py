@@ -93,13 +93,14 @@ def run_mpi_experiment(f, parameters, savefile=None, return_results=False):
 
     all_results = [[] for i in range(size)]
     all_results = comm.gather(globbed_results, root=0)
-    # Unglob results so they are same length as parameters and in correct order
-    all_results = [result for glob in all_results for result in glob]
 
     # Save and/or return results
     if rank == 0:
+        # Unglob results so they are same length as parameters and in correct order
+        all_results = [result for glob in all_results for result in glob]
+
         if not (savefile is None):
             save(all_results, savefile)
 
-    if return_results:
-        return all_results
+        if return_results:
+            return all_results
