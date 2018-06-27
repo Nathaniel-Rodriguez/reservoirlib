@@ -112,6 +112,56 @@ class DynamicsExperiment:
         return self.metric(np.squeeze(self.esn.history, axis=2))
 
 
+class AttractorExperiment:
+    """
+    Runs a task and estimates the number of unique attractors from ESN history.
+    """
+
+    def __init__(self, attractor_distance_threshold, esn, task, convergence_metric):
+        """
+        :param esn: an object that should conform to the BaseESN interface
+        :param task: an object that will generate input time-series
+            task should conform the BaseTask interface
+        :param convergence_metric: a function that takes as arguments
+            the history of an ESN and evaluates whether it converged
+        """
+
+        self.esn = esn
+        self.task = task
+        self.convergence_metric = convergence_metric
+        self.attractor_distance_threshold = attractor_distance_threshold
+
+    def num_unique_attractors(self, num_trials, max_iter):
+        """
+        :param num_trials: the number of trails from which to determine
+            estimate
+        :param max_iter: Will be run for duration of task signal if not greater
+            than max_iter
+        :return: number of unique attractors detected.
+        """
+
+        attractors = []
+        for i in range(num_trials):
+            self.esn.reset()
+            signal, _, _, _ = self.task.generate_signal()
+            self.esn.run(signal, num_iter=max_iter, record=True)
+            if self.convergence_metric(self.esn.history):
+                attractors.append(self.esn.network_history[-1, :].copy())
+
+        unique_attractors = []
+        while attractors:
+            for state in unique_attractors:
+                if np.linalg.norm(attractors[-1] - state) \
+                        < self.attractor_distance_threshold:
+                    attractors.pop()
+                    break
+
+            else:
+                unique_attractors.append(attractors.pop())
+
+        return len(unique_attractors)
+
+
 def index(x, k, c):
     """
     Determines the stack index, for assigning output of each trial to the proper
