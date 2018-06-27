@@ -84,18 +84,19 @@ def run_mpi_experiment(f, parameters, savefile=None, return_results=False):
     chunksize = int(math.ceil(len(parameters) / size))
     tasks_by_rank = [parameters[i*chunksize: i*chunksize+chunksize]
                      for i in range(size)]
-    all_results = [[] for i in range(size)]
+
     # Even if results are objects of varying length or uneven, we can glob them
     # up and slap them in the result list.
     globbed_results = []
     for parameters in tasks_by_rank[rank]:
         globbed_results.append(f(parameters))
 
+    all_results = [[] for i in range(size)]
     all_results = comm.gather(globbed_results, root=0)
     # Unglob results so they are same length as parameters and in correct order
     all_results = [result for glob in all_results for result in glob]
 
-    # Save results
+    # Save and/or return results
     if rank == 0:
         if not (savefile is None):
             save(all_results, savefile)
