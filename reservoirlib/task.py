@@ -135,7 +135,7 @@ class NbitRecallTask(BaseTask):
         if self.loop_unique_input:
             self.looping_index = 0  # used for drawing from shuffled patterns
             self.pre_generate_all_patterns()
-            if self.num_patterns is None:
+            if num_patterns is None:
                 self.num_patterns = len(self.pregenerated_patterns)
             else:
                 self.num_patterns = num_patterns
