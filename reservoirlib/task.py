@@ -101,7 +101,10 @@ class NbitRecallTask(BaseTask):
         :param num_patterns: if loop unique is true, you can pick the number of
             patterns to memorize and during evaluation this full set will be
             iterated over only (reseting the loop unique) Defaults: None
-            If None it uses all available patterns
+            If None it uses all available patterns.
+            NOTE: Make sure to set the number of training trials and evaluation
+            trials to be equal to this value so that you compare performance on
+            this set of patterns.
         :param seed: for the RNG, if None (default), then it uses numpy
             RandomState's default seed
         :param kwargs: BaseTask arguments
