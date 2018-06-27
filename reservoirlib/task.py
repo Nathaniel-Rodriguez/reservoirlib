@@ -228,7 +228,7 @@ class NbitRecallTask(BaseTask):
 
         # Set input signal pattern
         input_signal[self.start_time:self.start_time + self.pattern_length,
-        :self.pattern_dimension] = target_output
+                     :self.pattern_dimension] = target_output
         # Create distractor series (it is the second to last dimension)
         input_signal[self.distractor_start_time:
                      self.distractor_start_time + self.distraction_duration,
@@ -247,7 +247,7 @@ class NbitRecallTask(BaseTask):
         :return: 1 if correctly identified or 0 if not
         """
 
-        prediction_pattern = prediction[self.recall_time:, :-2]
+        prediction_pattern = prediction[self.recall_time:, :]
         rounded_prediction = np.rint(prediction_pattern).astype(np.int64)
         rounded_target = np.rint(target).astype(np.int64)
         if np.count_nonzero(rounded_target - rounded_prediction) == 0:
