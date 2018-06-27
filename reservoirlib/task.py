@@ -80,7 +80,8 @@ class NbitRecallTask(BaseTask):
 
     def __init__(self, pattern_length=1, pattern_dimension=1, start_time=0,
                  distraction_duration=0, cue_value=1, distractor_value=0,
-                 pattern_value=1, loop_unique_input=False, seed=None, **kwargs):
+                 pattern_value=1, loop_unique_input=False, num_patterns=None,
+                 seed=None, **kwargs):
         """
         Initializes the task. The Pattern is a set of values that activate
         for each time-step for a set number of time-steps. Only one dimension of
@@ -97,6 +98,10 @@ class NbitRecallTask(BaseTask):
         :param loop_unique_input: if True, all pattern configurations are
             generated and those are used for the signals. If False, random
             patterns are generated.
+        :param num_patterns: if loop unique is true, you can pick the number of
+            patterns to memorize and during evaluation this full set will be
+            iterated over only (reseting the loop unique) Defaults: None
+            If None it uses all available patterns
         :param seed: for the RNG, if None (default), then it uses numpy
             RandomState's default seed
         :param kwargs: BaseTask arguments
@@ -127,6 +132,10 @@ class NbitRecallTask(BaseTask):
         if self.loop_unique_input:
             self.looping_index = 0  # used for drawing from shuffled patterns
             self.pre_generate_all_patterns()
+            if self.num_patterns is None:
+                self.num_patterns = len(self.pregenerated_patterns)
+            else:
+                self.num_patterns = num_patterns
 
         self._input_dimensions = self.pattern_dimension + 2  # + cue + distractor
         self._output_dimensions = self.pattern_dimension
@@ -190,8 +199,7 @@ class NbitRecallTask(BaseTask):
         """
 
         target_output[:] = self.pregenerated_patterns[self.looping_index]
-        self.looping_index = (self.looping_index + 1) \
-                             % self.pregenerated_patterns.shape[0]
+        self.looping_index = (self.looping_index + 1) % self.num_patterns
 
         return target_output
 
