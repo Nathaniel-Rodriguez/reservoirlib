@@ -144,9 +144,10 @@ class AttractorExperiment:
         for i in range(num_trials):
             self.esn.reset()
             signal, _, _, _ = self.task.generate_signal()
-            self.esn.run(signal, num_iter=max_iter, record=True)
+            self.esn.run(np.expand_dims(signal, axis=2), num_iter=max_iter,
+                         record=True)
             if self.convergence_metric(self.esn.history):
-                attractors.append(self.esn.network_history[-1, :].copy())
+                attractors.append(self.esn.history[-1, :].copy())
 
         unique_attractors = []
         while attractors:
