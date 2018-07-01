@@ -31,7 +31,9 @@ as well as define methods for validating model target signals.
 Contains classes that define the cost function that will be optimized along with
 the optimizer itself.
 #### utility
-Contains some commonly used functions and default parameters.
+Contains some commonly used functions and default parameters. It also has a 
+function for running experiments using MPI. This requires mpi4py to be installed.
+It is an optional dependency.
 ### Making New Additions
 Each class has an abstract base class which defines an interface for the class.
 New trainers, generators, ESNs, or tasks can be created and added
@@ -39,4 +41,6 @@ at your leisure by inheriting from these base classes.
 
 ### Using reservoirlib
 An example script is provided under `examples` which you can inspect to see how
-the different library elements come together to make an experiment.
+the different library elements come together to make an experiment. The examples
+provided require the [graphgen library](https://github.com/Nathaniel-Rodriguez/graphgen.git)
+ for generating graphs for the reservoirs. You can swap it out for your own.
