@@ -1,7 +1,14 @@
 # reservoirlib
 A library that has various tools for making, testing, and training reservoirs 
 computers and echo state networks. It was developed for Python 3 and tested on
-Python 3.5+.
+Python 3.5+. It can be installed using one of the following commands:
+
+```bash
+pip install git+https://github.com/Nathaniel-Rodriguez/reservoirlib.git
+```
+
+Or you can clone (or copy) down the repository and run `pip install .` or `python setup.py install`
+from the top directory.
 
 ### Library contents
 #### distribution
