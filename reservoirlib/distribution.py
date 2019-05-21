@@ -11,6 +11,12 @@ class Distribution(np.random.RandomState):
 
     When called, the Distribution object will generate random values as a numpy
     array.
+
+    example:
+        Distribution("multivariate_normal",
+                     {'mean': np.zeros(num_variables),
+                     'cov': covariance_matrix / fitness},
+                     seed=seed)
     """
 
     def __init__(self, distribution, distribution_args=None, *args, **kwargs):
